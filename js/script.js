@@ -2,15 +2,15 @@
 // Utilizzare l’API di esempio http://157.230.17.132:xxxx
 // e fare le 4 operazioni Create, Read, Update e Delete.
 $(document).ready(function(){
-    getElement();
+    getData();
     $(document).on('click','span.delete',function(){
         var elemento = $(this);
         var idToDo = elemento.parent().attr('data-id');
         deleteElement(idToDo);
     });
 
-    $(.'inserisci').click(function(){
-        var newElement = ('#nuova-voce').val();
+    $('.inserisci').click(function(){
+        var newElement = $('#nuova-voce').val();
         createElement(newElement);
     });
 
@@ -33,34 +33,38 @@ $(document).ready(function(){
 })
 
 // FUNZIONI
-function getElement(RicercaElemento){
-    $.ajax({
-        url: 'http://157.230.17.132:3003/todos',
-        method: 'Get',
-        success: function(data){
-            var source = $("#entry-template").html();
-            var template = Handlebars.compile(source);
+function getData(){
+  $.ajax(
+    {
+      url: 'http://157.230.17.132:3003/todos',
+      method: 'GET',
+      success: function(risposta){
+        getElement(risposta);
+      },
+      error: function(){
+        alert('Errore');
+      }
+    }
+  );
+}
 
-            for (var i = 0; i < data.length ; i++) {
-                var context = {
-                    text: data[i].text,
-                    id: data[i].id
-                }
-                console.log(context);
-                var html = template(context);
-                $('.todos').append(html);
-            }
+function getElement(data){
+    var source = $("#entry-template").html();
+    var template = Handlebars.compile(source);
 
-        },
-        error: function(){
-            alert('Errore');
-        }
-    });
+    for (var i = 0; i < data.length ; i++) {
+        var context = {
+            text: data[i].text,
+            id: data[i].id
+        };
+        var html = template(context);
+        $('.todos').append(html);
+    }
 }
 
 function deleteElement(id){
     $.ajax({
-        url: 'http://157.230.17.132:3003/todos' + id,
+        url: 'http://157.230.17.132:3003/todos/' + id,
         method: 'DELETE',
         success: function(risposta){
             $('.todos').html('');
@@ -72,9 +76,28 @@ function deleteElement(id){
     });
 }
 
+function createElement(elemento){
+  $.ajax(
+    {
+      url: 'http://157.230.17.132:3003/todos',
+      method:'POST',
+      data: {
+        text: elemento
+      },
+      success: function(risposta){
+        $('.todos').html('');
+        getData();
+      },
+      error: function (){
+        alert('errore!');
+      }
+    }
+  );
+}
+
 function updateElement(id,elemento){
     $.ajax({
-        url: 'http://157.230.17.132:3003/todos' + id,
+        url: 'http://157.230.17.132:3003/todos/' + id,
         method: 'PUT',
         data: {
             text: elemento
